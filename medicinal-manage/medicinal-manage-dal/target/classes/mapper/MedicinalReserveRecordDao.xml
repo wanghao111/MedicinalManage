@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.medicinal.dao.mapper.MedicinalReserveRecordDao">
+
+
+    <resultMap id="BaseResultMap" type="com.medicinal.dao.vo.MedicinalReserveRecordVO">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="medicinal_code" jdbcType="VARCHAR" property="medicinalCode" />
+        <result column="medicinal_name" jdbcType="VARCHAR" property="medicinalName" />
+        <result column="unit_price" jdbcType="FLOAT" property="unitPrice" />
+        <result column="count" jdbcType="BIGINT" property="count" />
+        <result column="total_price" jdbcType="FLOAT" property="totalPrice" />
+        <result column="reserve_type" jdbcType="TINYINT" property="reserveType" />
+        <result column="current_reserve" jdbcType="BIGINT" property="currentReserve" />
+        <result column="current_total_price" jdbcType="FLOAT" property="currentTotalPrice" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, medicinal_code, medicinal_name, unit_price, count,reserve_type, total_price,current_reserve,current_total_price, create_time,update_time
+    </sql>
+
+    <sql id="table_name">
+        medicinal_reserve_record
+    </sql>
+
+    <sql id="create_set_value">
+        <set>
+            <trim suffixOverrides=",">
+                <if test="medicinalCode != null">
+                    medicinal_code = #{medicinalCode,jdbcType=VARCHAR},
+                </if>
+                <if test="medicinalName != null">
+                    medicinal_name = #{medicinalName,jdbcType=VARCHAR},
+                </if>
+                <if test="unitPrice != null">
+                    unit_price = #{unitPrice,jdbcType=FLOAT},
+                </if>
+                <if test="count != null">
+                    count = #{count,jdbcType=INTEGER},
+                </if>
+                <if test="reserveType != null">
+                    reserve_type = #{reserveType,jdbcType=INTEGER},
+                </if>
+                <if test="totalPrice != null">
+                    total_price = #{totalPrice,jdbcType=FLOAT},
+                </if>
+                <if test="currentReserve != null">
+                    current_reserve = #{currentReserve,jdbcType=INTEGER},
+                </if>
+                <if test="currentTotalPrice != null">
+                    current_total_price = #{currentTotalPrice,jdbcType=FLOAT},
+                </if>
+            </trim>
+        </set>
+    </sql>
+
+
+    <insert id="create" parameterType="com.medicinal.dao.vo.MedicinalReserveRecordVO">
+        insert into <include refid="table_name"/> <include refid="create_set_value"/>
+    </insert>
+
+    <select id="queryList" resultMap="BaseResultMap" >
+        <bind name="offset" value="(param.page-1)*param.pageSize"/>
+        select * from <include refid="table_name"/>
+        where  1=1
+        <trim>
+            <if test="param.medicinalCode != null and param.medicinalCode !=''">
+                and medicinal_code=#{param.medicinalCode}
+            </if>
+            <if test="param.medicinalName != null and param.medicinalName !=''">
+                and medicinal_name like concat('%',#{param.medicinalName},'%')
+            </if>
+        </trim>
+        limit #{offset},#{param.pageSize}
+    </select>
+
+    <select id="getTotalCount" resultType="int">
+        select count(id) from <include refid="table_name"/>
+        where  1=1
+        <trim>
+            <if test="param.medicinalCode != null and param.medicinalCode !=''">
+                and medicinal_code=#{param.medicinalCode}
+            </if>
+            <if test="param.medicinalName != null and param.medicinalName !=''">
+                and medicinal_name like concat('%',#{param.medicinalName},'%')
+            </if>
+        </trim>
+    </select>
+
+    <select id="getDistinctTotalCountByMonth" resultType="int">
+        select count(distinct(medicinal_code)) from <include refid="table_name"/>
+        where create_time like concat(#{month},'%')
+    </select>
+
+    <select id="pageQueryDistinctMedicinal" resultType="String">
+        <bind name="offset" value="(param.page-1)*param.pageSize"/>
+        select distinct(medicinal_code) from
+        <include refid="table_name"/>
+        where create_time like concat(#{param.month},'%')
+        limit #{offset},#{param.pageSize}
+    </select>
+
+    <resultMap id="reserveStatsResultMap" type="com.medicinal.dao.vo.MedicinalReserveStatisticsVO">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="medicinal_code" jdbcType="VARCHAR" property="medicinalCode" />
+        <result column="medicinal_name" jdbcType="VARCHAR" property="medicinalName" />
+        <result column="count" jdbcType="BIGINT" property="count" />
+        <result column="total_price" jdbcType="FLOAT" property="totalPrice" />
+        <result column="reserve_type" jdbcType="TINYINT" property="reserveType" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <select id="queryRecordStatisticsListByMonth" resultMap="reserveStatsResultMap">
+        select medicinal_code,reserve_type,sum(count) as count,sum(total_price) as total_price
+        from <include refid="table_name"/>
+        where create_time like concat(#{month},'%') and medicinal_code in
+        <foreach collection="medicinalCodes" item="medicinalCode" index="index" open="(" close=")" separator=",">
+            #{medicinalCode}
+        </foreach>
+        group by medicinal_code, reserve_type
+    </select>
+
+    <select id="getLastRecord" resultMap="BaseResultMap">
+        select * from medicinal_reserve_record where id in
+        (
+            select max(id) from medicinal_reserve_record
+            where create_time like concat(#{month},'%') and medicinal_code in
+            <foreach collection="medicinalCodes" item="medicinalCode" index="index" open="(" close=")" separator=",">
+                #{medicinalCode}
+            </foreach>
+            group by medicinal_code
+        )
+    </select>
+</mapper>

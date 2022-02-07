@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="medicinal-manage-web" />
+        <module name="medicinal-manage-biz" />
+        <module name="medicinal-manage-dal" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="medicinal-manage-biz" options="-parameters" />
+      <module name="medicinal-manage-dal" options="-parameters" />
+      <module name="medicinal-manage-web" options="-parameters" />
+    </option>
+  </component>
+</project>

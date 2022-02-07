@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.medicinal.dao.mapper.MedicinalDao">
+
+
+    <resultMap id="BaseResultMap" type="com.medicinal.dao.vo.MedicinalVO">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="code" jdbcType="VARCHAR" property="code" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="unit" jdbcType="VARCHAR" property="unit" />
+        <result column="unit_price" jdbcType="FLOAT" property="unitPrice" />
+        <result column="reserve" jdbcType="BIGINT" property="reserve" />
+        <result column="create_date" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_date" jdbcType="TIMESTAMP" property="createTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, code, name, unit, unit_price, reserve, create_date,update_date
+    </sql>
+
+    <sql id="table_name">
+        medicinal
+    </sql>
+
+    <sql id="create_set_value">
+        <set>
+            <trim suffixOverrides=",">
+                <if test="code != null">
+                    code = #{code,jdbcType=VARCHAR},
+                </if>
+                <if test="name != null">
+                    name = #{name,jdbcType=VARCHAR},
+                </if>
+                <if test="unit != null">
+                    unit = #{unit,jdbcType=VARCHAR},
+                </if>
+                <if test="unitPrice != null">
+                    unit_price = #{unitPrice,jdbcType=FLOAT},
+                </if>
+                <if test="reserve != null">
+                    reserve = #{reserve,jdbcType=INTEGER},
+                </if>
+<!--                <if test="createTime != null">-->
+<!--                    create_date = #{createTime,jdbcType=TIMESTAMP},-->
+<!--                </if>-->
+<!--                <if test="updateTime != null">-->
+<!--                    update_date = #{updateTime,jdbcType=TIMESTAMP},-->
+<!--                </if>-->
+            </trim>
+        </set>
+    </sql>
+
+    <sql id="update_set_value">
+        <set>
+            <trim suffixOverrides=",">
+                <if test="unit != null">
+                    unit = #{unit,jdbcType=VARCHAR},
+                </if>
+                <if test="unitPrice != null">
+                    unit_price = #{unitPrice,jdbcType=FLOAT},
+                </if>
+                <if test="reserve != null">
+                    reserve = #{reserve,jdbcType=INTEGER},
+                </if>
+            </trim>
+        </set>
+    </sql>
+
+    <insert id="create" parameterType="com.medicinal.dao.vo.MedicinalVO">
+        insert into <include refid="table_name"/> <include refid="create_set_value"/>
+    </insert>
+
+    <update id="update" parameterType="com.medicinal.dao.vo.MedicinalVO">
+        update <include refid="table_name"/> <include refid="update_set_value"/> where code=#{code} limit 1
+    </update>
+
+    <update id="delete">
+        delete from <include refid="table_name"/> where code=#{code} limit 1
+    </update>
+
+    <select id="queryList" resultMap="BaseResultMap" >
+        <bind name="offset" value="(param.page-1)*param.pageSize"/>
+        select * from <include refid="table_name"/>
+        where  1=1
+        <trim>
+                <if test="param.code != null and param.code !=''">
+                and code=#{param.code}
+                </if>
+                <if test="param.name != null and param.name !=''">
+                and name like concat('%',#{param.name},'%')
+                </if>
+        </trim>
+        limit #{offset},#{param.pageSize}
+    </select>
+
+    <select id="getTotalCount" resultType="int">
+        select count(id) from <include refid="table_name"/>
+        where  1=1
+        <trim>
+            <if test="param.code != null and param.code !=''">
+                and code=#{param.code}
+            </if>
+            <if test="param.name != null and param.name !=''">
+                and name like concat('%',#{param.name},'%')
+            </if>
+        </trim>
+    </select>
+
+    <select id="get" resultMap="BaseResultMap">
+        select * from <include refid="table_name"/> where code=#{code} limit 1
+    </select>
+
+    <update id="decrementReserve">
+        update <include refid="table_name"/> set reserve=reserve-#{delCount} where code=#{code} limit 1
+    </update>
+</mapper>
