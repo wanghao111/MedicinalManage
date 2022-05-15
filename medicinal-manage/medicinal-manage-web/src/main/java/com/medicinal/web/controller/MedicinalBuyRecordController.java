@@ -1,47 +1,36 @@
 package com.medicinal.web.controller;
 
+import com.medicinal.biz.model.Medicinal;
 import com.medicinal.biz.model.MedicinalBuyRecord;
-import com.medicinal.biz.service.MedicinalBuyRecordService;
-import com.medicinal.dao.params.MedicinalBuyRecordPageQuery;
-import com.medicinal.web.converter.MedicinalBuyerRecordConverter;
-import com.medicinal.web.dto.*;
+import com.medicinal.web.converter.MedicinalConverter;
+import com.medicinal.web.dto.BaseResult;
+import com.medicinal.web.dto.MedicinalBuyDTO;
+import com.medicinal.web.dto.MedicinalDTO;
 import com.medicinal.web.factory.BaseResultFactory;
-import com.medicinal.web.factory.PageQueryFacotry;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
+/**
+ * 购药管理
+ * @author wanghao
+ * @version 1.0
+ * @date 2022/5/14 14:41
+ */
 @RestController
-@RequestMapping("/medicinalBuyRecord")
-public class MedicinalBuyRecordController {
+@RequestMapping("/medicinal/buy")
+public class MedicinalBuyController {
 
-    @Autowired
-    private MedicinalBuyRecordService medicinalBuyRecordService;
-
-    @PostMapping(value = "/create", produces = {"application/json;charset=utf-8"})
-    public BaseResult<Integer> createMedicinalBuyRecord(@RequestBody MedicinalBuyRecordDTO medicinalBuyRecord) {
-        int insertNum = medicinalBuyRecordService.create(MedicinalBuyerRecordConverter.buyRecordDTO2BuyRecord(medicinalBuyRecord));
-        return BaseResultFactory.createSuccessBaseResult(insertNum, "create Medicinal buy record success");
-    }
-
-    @PostMapping(value = "/list", produces = {"application/json;charset=utf-8"})
-    public BaseResult<PageResultBase> queryList(@RequestBody MedicinalBuyRecordPageParam param) {
-        MedicinalBuyRecordPageQuery queryParam = PageQueryFacotry.buyerRecordPageRequestParam2Query(param);
-
-        int totalCount = medicinalBuyRecordService.getTotalCount(queryParam);
-        List<MedicinalBuyRecord> medicinalBuyRecords = medicinalBuyRecordService.queryList(queryParam);
-
-        double totalPage = Math.ceil((double)totalCount / param.getPageSize());
-        PageResultBase pageResultBase = PageResultBase.builder()
-                .list(medicinalBuyRecords)
-                .currentPage(param.getPage())
-                .totalPage((int)totalPage)
+    public BaseResult<Integer> addMedicinalBuyOrder(@RequestBody MedicinalBuyDTO params) {
+        MedicinalBuyRecord buyRecord = MedicinalBuyRecord.builder()
+                .code(params.getCode())
+                .count(params.getCount())
                 .build();
-        return BaseResultFactory.createSuccessBaseResult(pageResultBase,"query success");
+        int insertNum = medicinalService.create(medicinal);
+        return BaseResultFactory.createSuccessBaseResult(insertNum, "create Medicinal success");
     }
+
+
+
 
 }
